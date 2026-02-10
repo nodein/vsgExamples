@@ -95,6 +95,15 @@ struct LoadOperation : public vsg::Inherit<vsg::Operation, LoadOperation>
             scale->addChild(node);
             node = scale;
 
+            if (vsg::value<bool>(false, "write", options))
+            {
+                auto outputFilename = vsg::simpleFilename(filename) + ".vsgt";
+
+                vsg::write(node, outputFilename, options);
+
+                vsg::info("Written ", outputFilename);
+            }
+
             if (vsg::value<bool>(false, "decorate", options))
             {
                 node = decorateWithInstrumentationNode(node, filename.string(), vsg::uint_color(255, 255, 64, 255));
@@ -172,6 +181,9 @@ int main(int argc, char** argv)
             instrumentation = tracy_instrumentation;
         }
 #endif
+
+        auto outputFilename = arguments.value<vsg::Path>("", "-o");
+        if (arguments.read("--write")) options->setValue("write", true);
 
         if (arguments.errors()) return arguments.writeErrorMessages(std::cerr);
 
@@ -266,6 +278,12 @@ int main(int argc, char** argv)
             viewer->present();
 
             // if (loadThreads->queue->empty()) break;
+        }
+
+        if (outputFilename)
+        {
+            vsg::write(vsg_scene, outputFilename, options);
+            vsg::info("Written ", outputFilename);
         }
 
         if (auto profiler = instrumentation.cast<vsg::Profiler>())
