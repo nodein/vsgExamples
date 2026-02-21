@@ -195,6 +195,12 @@ int main(int argc, char** argv)
             }
         }
 
+        // Add a teapot model to the scene
+        if (auto teapot = vsg::read_cast<vsg::Node>("data/models/teapot.vsgt", options))
+        {
+            vsg_scene->addChild(teapot);
+        }
+
         // create the viewer and assign window(s) to it
         auto viewer = vsg::Viewer::create();
 
@@ -243,6 +249,13 @@ int main(int argc, char** argv)
 
         renderGraph->addChild(view);
 
+        // initialize ImGui
+        ImGui::CreateContext();
+
+        // Enable docking
+        ImGuiIO& io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;   // Enable Docking
+
         if (fontFile)
         {
             auto foundFontFile = vsg::findFile(fontFile, options);
@@ -251,11 +264,7 @@ int main(int argc, char** argv)
                 // convert native filename to UTF8 string that is compatible with ImGui.
                 std::string c_fontFile = foundFontFile.string();
 
-                // initialize ImGui
-                ImGui::CreateContext();
-
                 // read the font via ImGui, which will then be current when vsgImGui::RenderImGui initializes the rest of ImGui/Vulkan below
-                ImGuiIO& io = ImGui::GetIO();
                 auto imguiFont = io.Fonts->AddFontFromFileTTF(c_fontFile.c_str(), fontSize);
                 if (!imguiFont)
                 {
